@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD 2 - DSS Ramzev</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            margin: 0;
+        }
+
+        header {
+            background-color: #000000;
+            color: #f5c400;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        nav {
+            background-color: #111111;
+            padding: 12px;
+            text-align: center;
+        }
+
+        nav a {
+            color: #f5c400;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .contenido {
+            padding: 25px;
+        }
+
+        .card {
+            border: 2px solid #111111;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fefefe;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 2px solid #000000;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 14px;
+            background-color: #f5c400;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #000000;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d4aa00;
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+        }
+
+        th, td {
+            border: 2px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #000000;
+            color: #f5c400;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header>
+    Sistema de Soporte de Decisiones - Ramzev
+</header>
+
+<nav>
+    <a href="index.html">Inicio</a>
+    <a href="login.html">Login</a>
+    <a href="crud1.html">CRUD 1</a>
+    <a href="crud2.html">CRUD 2</a>
+    <a href="dashboards.html">Dashboards</a>
+</nav>
+
+<div class="contenido">
+
+    <div class="card">
+
+        <h2>CRUD 2</h2>
+
+        <!-- FORMULARIO -->
+        <h3>Registrar nuevo elemento</h3>
+
+        <div class="form-grid">
+
+            <div>
+                <label>Nombre:</label>
+                <input type="text" id="nombre2">
+            </div>
+
+            <div>
+                <label>Categoría:</label>
+                <select id="categoria2">
+                    <option value="">Seleccione...</option>
+                    <option>A</option>
+                    <option>B</option>
+                    <option>C</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Cantidad:</label>
+                <input type="number" id="cantidad2">
+            </div>
+
+            <div>
+                <label>Precio:</label>
+                <input type="number" id="precio2" step="0.01">
+            </div>
+
+        </div>
+
+        <br>
+        <button onclick="crearRegistro2()">Guardar</button>
+
+        <!-- TABLA -->
+        <h3 style="margin-top: 25px;">Listado</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaCrud2"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+const API2 = "http://127.0.0.1:8000/api/crud2/";
+
+function cargarRegistros2() {
+    fetch(API2 + "listar/")
+        .then(res => res.json())
+        .then(data => {
+            let html = "";
+            data.forEach(reg => {
+                html += `
+                <tr>
+                    <td>${reg.id}</td>
+                    <td><input type="text" id="nombre2_${reg.id}" value="${reg.nombre}"></td>
+                    <td>
+                        <select id="categoria2_${reg.id}">
+                            <option ${reg.categoria === "A" ? "selected" : ""}>A</option>
+                            <option ${reg.categoria === "B" ? "selected" : ""}>B</option>
+                            <option ${reg.categoria === "C" ? "selected" : ""}>C</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="cantidad2_${reg.id}" value="${reg.cantidad}"></td>
+                    <td><input type="number" step="0.01" id="precio2_${reg.id}" value="${reg.precio}"></td>
+                    <td><button class="btn-small" onclick="editarRegistro2(${reg.id})">Editar</button></td>
+                    <td><button class="btn-small" onclick="eliminarRegistro2(${reg.id})">Eliminar</button></td>
+                </tr>
+                `;
+            });
+            document.getElementById("tablaCrud2").innerHTML = html;
+        });
+}
+
+function crearRegistro2() {
+    let nombre = document.getElementById("nombre2").value;
+    let categoria = document.getElementById("categoria2").value;
+    let cantidad = document.getElementById("cantidad2").value;
+    let precio = document.getElementById("precio2").value;
+
+    fetch(API2 + "crear/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            nombre: nombre,
+            categoria: categoria,
+            cantidad: cantidad,
+            precio: precio
+        })
+    })
+    .then(() => {
+        document.getElementById("nombre2").value = "";
+        document.getElementById("categoria2").value = "";
+        document.getElementById("cantidad2").value = "";
+        document.getElementById("precio2").value = "";
+        cargarRegistros2();
+    });
+}
+
+function editarRegistro2(id) {
+    let nombre = document.getElementById("nombre2_" + id).value;
+    let categoria = document.getElementById("categoria2_" + id).value;
+    let cantidad = document.getElementById("cantidad2_" + id).value;
+    let precio = document.getElementById("precio2_" + id).value;
+
+    fetch(API2 + "editar/" + id + "/", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            nombre: nombre,
+            categoria: categoria,
+            cantidad: cantidad,
+            precio: precio
+        })
+    })
+    .then(() => cargarRegistros2());
+}
+
+function eliminarRegistro2(id) {
+    fetch(API2 + "eliminar/" + id + "/", {
+        method: "DELETE"
+    })
+    .then(() => cargarRegistros2());
+}
+
+cargarRegistros2();
+
+</script>
+
+</body>
+</html>
